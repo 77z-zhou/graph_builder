@@ -210,3 +210,4 @@ __marimo__/
 backend/chunks/
 backend/local_model/
 backend/merged_files/
+test.ipynb
