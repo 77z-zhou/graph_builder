@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识图谱构建器 - 图谱提取与对话</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+        }
+
+        .panel-title {
+            font-size: 1.3em;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* 左侧面板 - 知识图谱提取 */
+        .extraction-section {
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            font-size: 1.1em;
+            color: #555;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            color: #555;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 13px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+            font-family: inherit;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-test {
+            background: #28a745;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .response-area {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+
+        .response-area pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+        }
+
+        .response-success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+        }
+
+        .response-error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 25px;
+            background: #f0f0f0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .progress-bar.show {
+            display: block;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .file-drop-area {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-bottom: 10px;
+        }
+
+        .file-drop-area:hover {
+            background: #f8f9ff;
+        }
+
+        .file-info {
+            margin-top: 8px;
+            padding: 8px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            display: none;
+            font-size: 12px;
+        }
+
+        .file-info.show {
+            display: block;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* 右侧面板 - 聊天 */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            min-height: 400px;
+            max-height: 500px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message.user {
+            align-items: flex-end;
+        }
+
+        .message.assistant {
+            align-items: flex-start;
+        }
+
+        .message-content {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+
+        .message.tool {
+            align-items: flex-start;
+        }
+
+        .message.tool .message-content {
+            background: transparent;
+            border: none;
+            padding: 5px 0;
+            max-width: 100%;
+        }
+
+        .message-meta {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .tool-call, .tool-result {
+            margin: 8px 0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .tool-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        .tool-call .tool-header {
+            background: #fff3cd;
+            border-left: 3px solid #ffc107;
+        }
+
+        .tool-result .tool-header {
+            background: #d1ecf1;
+            border-left: 3px solid #17a2b8;
+        }
+
+        .tool-header:hover {
+            filter: brightness(0.95);
+        }
+
+        .tool-icon {
+            font-size: 14px;
+        }
+
+        .tool-name {
+            flex: 1;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .tool-toggle {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .tool-details {
+            padding: 0;
+        }
+
+        .tool-args, .tool-result-content {
+            margin: 0;
+            padding: 10px 12px;
+            background: #f8f9fa;
+            border-top: 1px solid #e0e0e0;
+            font-size: 12px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .tool-loading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #e2e3e5;
+            border-left: 3px solid #6c757d;
+            border-radius: 4px;
+            font-size: 12px;
+            margin: 5px 0;
+        }
+
+        .loading-spinner {
+            width: 12px;
+            height: 12px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .chat-input-area {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-model-select {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .chat-model-select select {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+        }
+
+        .chat-input-box {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input-box textarea {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            resize: none;
+            font-family: inherit;
+            font-size: 14px;
+            min-height: 60px;
+        }
+
+        .chat-input-box textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: transform 0.2s;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 10px 15px;
+            color: #999;
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        .typing-indicator.show {
+            display: block;
+        }
+
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .panel {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 知识图谱构建器</h1>
+            <p>图谱提取与智能对话系统</p>
+        </div>
+
+        <div class="main-layout">
+            <!-- 左侧面板 - 知识图谱提取 -->
+            <div class="panel">
+                <div class="panel-title">
+                    <span>📊 知识图谱提取</span>
+                    <span id="extractionStatus" class="status-badge" style="font-size: 0.7em; padding: 4px 10px; border-radius: 10px; background: #e0e0e0;">就绪</span>
+                </div>
+
+                <!-- 数据库连接 -->
+                <div class="extraction-section">
+                    <div class="section-title">🔗 数据库连接</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>URI</label>
+                            <input type="text" id="dbUri" placeholder="bolt://127.0.0.1:7687" value="bolt://127.0.0.1:7687">
+                        </div>
+                        <div class="form-group">
+                            <label>用户名</label>
+                            <input type="text" id="dbUsername" placeholder="neo4j" value="neo4j">
+                        </div>
+                        <div class="form-group">
+                            <label>密码</label>
+                            <input type="password" id="dbPassword" placeholder="密码" value="12345678">
+                        </div>
+                        <div class="form-group">
+                            <label>数据库</label>
+                            <input type="text" id="dbDatabase" placeholder="neo4j" value="neo4j">
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <button onclick="testConnection()" class="btn btn-small btn-test">测试连接</button>
+                    </div>
+                    <div id="connectionResponse" class="response-area hidden"></div>
+                </div>
+
+                <!-- 文件上传 -->
+                <div class="extraction-section">
+                    <div class="section-title">📁 文件上传</div>
+                    <div class="form-group">
+                        <label>选择模型</label>
+                        <select id="modelSelect">
+                            <option value="deepseek-deepseek-chat">DeepSeek Chat</option>
+                            <option value="dashscope-qwen3-max">Qwen 3 Max</option>
+                        </select>
+                    </div>
+                    <div class="file-drop-area" id="dropArea">
+                        <p style="font-size: 1.1em; margin-bottom: 8px;">📄</p>
+                        <p style="font-size: 13px;">拖拽文件到此处或点击选择</p>
+                        <input type="file" id="fileInput" style="display: none;" accept=".pdf,.txt,.docx,.doc">
+                    </div>
+                    <div id="fileInfo" class="file-info">
+                        <p><strong>文件名:</strong> <span id="fileName"></span></p>
+                        <p><strong>文件大小:</strong> <span id="fileSize"></span></p>
+                    </div>
+                    <div class="progress-bar" id="uploadProgress">
+                        <div class="progress-bar-fill" id="uploadProgressFill" style="width: 0%">0%</div>
+                    </div>
+                    <div class="btn-group">
+                        <button onclick="uploadFile()" id="uploadBtn" class="btn btn-small" disabled>上传文件</button>
+                        <button onclick="clearFile()" class="btn btn-small btn-secondary">清除</button>
+                    </div>
+                    <div id="uploadResponse" class="response-area hidden"></div>
+                </div>
+
+                <!-- 知识图谱提取 -->
+                <div class="extraction-section">
+                    <div class="section-title">⚗️ 图谱提取</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>模型</label>
+                            <select id="extractModel">
+                                <option value="deepseek-deepseek-chat">DeepSeek Chat</option>
+                                <option value="dashscope-qwen3-max">Qwen 3 Max</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>数据源</label>
+                            <select id="sourceType" onchange="updateSourceFields()">
+                                <option value="local_file">本地文件</option>
+                                <option value="web-url">网页 URL</option>
+                                <option value="bilibili">Bilibili</option>
+                                <option value="Wikipedia">维基百科</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="localFileFields">
+                        <div class="form-group">
+                            <label>文件名</label>
+                            <input type="text" id="fileName_extract" placeholder="从上传的文件中选择">
+                        </div>
+                    </div>
+
+                    <div id="urlFields" class="hidden">
+                        <div class="form-group">
+                            <label>URL 地址</label>
+                            <input type="url" id="sourceUrl" placeholder="https://example.com/article">
+                        </div>
+                    </div>
+
+                    <div id="bilibiliFields" class="hidden">
+                        <div class="form-group">
+                            <label>Bilibili URL</label>
+                            <input type="url" id="bilibiliUrl" placeholder="https://www.bilibili.com/video/BV...">
+                        </div>
+                    </div>
+
+                    <div id="wikiFields" class="hidden">
+                        <div class="form-group">
+                            <label>维基百科搜索关键词</label>
+                            <input type="text" id="wikiQuery" placeholder="例如: Artificial Intelligence">
+                        </div>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Token 块大小</label>
+                            <input type="number" id="tokenChunkSize" value="10000" min="1000">
+                        </div>
+                        <div class="form-group">
+                            <label>块重叠大小</label>
+                            <input type="number" id="chunkOverlap" value="200" min="0">
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button onclick="extractGraph()" class="btn btn-small btn-test">提取知识图谱</button>
+                    </div>
+                    <div id="extractResponse" class="response-area hidden"></div>
+                </div>
+
+                <!-- 后处理任务 -->
+                <div class="extraction-section">
+                    <div class="section-title">🔧 后处理任务</div>
+                    <div style="background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer; padding: 6px; background: white; border-radius: 5px; border: 1px solid #e0e0e0; transition: all 0.2s;">
+                                <input type="checkbox" id="task_similarities" value="materialize_text_chunk_similarities" style="margin-right: 10px; width: 16px; height: 16px; cursor: pointer;">
+                                <span>📊 文本块相似性计算 (KNN图)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer; padding: 6px; background: white; border-radius: 5px; border: 1px solid #e0e0e0; transition: all 0.2s;">
+                                <input type="checkbox" id="task_fulltext" value="enable_fulltext_search" style="margin-right: 10px; width: 16px; height: 16px; cursor: pointer;">
+                                <span>🔍 启用全文搜索和混合搜索</span>
+                            </label>
+                            <label style="display: flex; align-items: center; font-size: 13px; cursor: pointer; padding: 6px; background: white; border-radius: 5px; border: 1px solid #e0e0e0; transition: all 0.2s;">
+                                <input type="checkbox" id="task_consolidation" value="graph_schema_consolidation" style="margin-right: 10px; width: 16px; height: 16px; cursor: pointer;">
+                                <span>🔄 图谱模式整合（节点关系优化）</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="btn-group" style="margin-top: 12px;">
+                        <button onclick="executePostProcessing()" class="btn btn-small" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">⚡ 执行后处理</button>
+                        <button onclick="selectAllTasks()" class="btn btn-small btn-secondary">☑️ 全选</button>
+                        <button onclick="clearTaskSelection()" class="btn btn-small btn-secondary">🗑️ 清空</button>
+                    </div>
+                    <div id="postProcessingResponse" class="response-area hidden"></div>
+                </div>
+            </div>
+
+            <!-- 右侧面板 - 聊天对话 -->
+            <div class="panel">
+                <div class="panel-title">
+                    <span>💬 智能对话</span>
+                    <button onclick="clearChat()" class="btn btn-small btn-secondary" style="padding: 4px 10px; font-size: 12px;">清空对话</button>
+                </div>
+
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message assistant">
+                            <div class="message-content">
+                                你好！我是基于知识图谱的智能助手。请先在左侧上传文档并提取知识图谱，然后就可以向我提问了！🚀
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="typing-indicator" id="typingIndicator">
+                        🤖 正在思考中...
+                    </div>
+
+                    <div class="chat-input-area">
+                        <div class="chat-model-select">
+                            <label style="font-size: 13px; font-weight: 500; color: #555;">选择模型:</label>
+                            <select id="chatModel">
+                                <option value="deepseek-deepseek-chat">DeepSeek Chat</option>
+                                <option value="dashscope-qwen3-max">Qwen 3 Max</option>
+                            </select>
+                        </div>
+
+                        <div class="chat-input-box">
+                            <textarea id="chatInput" placeholder="输入你的问题... 例如：这个文档主要讲了什么内容？" onkeypress="handleChatKeyPress(event)"></textarea>
+                            <button onclick="sendMessage()" class="send-btn" id="sendBtn">发送</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:7860';
+        let selectedFile = null;
+        let uploadedFileName = null;
+        let sessionId = 'session_' + Date.now();
+
+        // ===== 文件上传相关 =====
+        const dropArea = document.getElementById('dropArea');
+        const fileInput = document.getElementById('fileInput');
+
+        dropArea.addEventListener('click', () => fileInput.click());
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.style.background = '#f8f9ff';
+        });
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.style.background = '';
+        });
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.style.background = '';
+            if (e.dataTransfer.files.length > 0) {
+                handleFileSelection(e.dataTransfer.files[0]);
+            }
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelection(e.target.files[0]);
+            }
+        });
+
+        function handleFileSelection(file) {
+            selectedFile = file;
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            document.getElementById('fileInfo').classList.add('show');
+            document.getElementById('uploadBtn').disabled = false;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function clearFile() {
+            selectedFile = null;
+            fileInput.value = '';
+            document.getElementById('fileInfo').classList.remove('show');
+            document.getElementById('uploadBtn').disabled = true;
+            document.getElementById('uploadProgress').classList.remove('show');
+        }
+
+        // ===== 数据库连接 =====
+        async function testConnection() {
+            const formData = new FormData();
+            formData.append('uri', document.getElementById('dbUri').value);
+            formData.append('userName', document.getElementById('dbUsername').value);
+            formData.append('password', document.getElementById('dbPassword').value);
+            formData.append('database', document.getElementById('dbDatabase').value);
+
+            try {
+                showResponse('connectionResponse', '正在测试连接...', false);
+                const response = await fetch(`${API_BASE_URL}/backend_connection_configuration`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                showResponse('connectionResponse', data, response.ok);
+                if (response.ok && data.status === 'Success') {
+                    document.getElementById('extractionStatus').textContent = '已连接';
+                    document.getElementById('extractionStatus').style.background = '#4caf50';
+                    document.getElementById('extractionStatus').style.color = 'white';
+                }
+            } catch (error) {
+                showError('connectionResponse', error.message);
+            }
+        }
+
+        // ===== 文件上传 =====
+        async function uploadFile() {
+            if (!selectedFile) {
+                alert('请先选择文件');
+                return;
+            }
+
+            const CHUNK_SIZE = 5 * 1024 * 1024;
+            const totalChunks = Math.ceil(selectedFile.size / CHUNK_SIZE);
+            const model = document.getElementById('modelSelect').value;
+
+            document.getElementById('uploadProgress').classList.add('show');
+            const progressBar = document.getElementById('uploadProgressFill');
+
+            try {
+                for (let chunkNumber = 1; chunkNumber <= totalChunks; chunkNumber++) {
+                    const start = (chunkNumber - 1) * CHUNK_SIZE;
+                    const end = Math.min(chunkNumber * CHUNK_SIZE, selectedFile.size);
+                    const chunk = selectedFile.slice(start, end);
+
+                    const formData = new FormData();
+                    formData.append('file', chunk, selectedFile.name);
+                    formData.append('chunkNumber', chunkNumber);
+                    formData.append('totalChunks', totalChunks);
+                    formData.append('originalname', selectedFile.name);
+                    formData.append('model', model);
+                    formData.append('uri', document.getElementById('dbUri').value);
+                    formData.append('userName', document.getElementById('dbUsername').value);
+                    formData.append('password', document.getElementById('dbPassword').value);
+                    formData.append('database', document.getElementById('dbDatabase').value);
+
+                    const response = await fetch(`${API_BASE_URL}/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const data = await response.json();
+                    const progress = Math.round((chunkNumber / totalChunks) * 100);
+                    progressBar.style.width = `${progress}%`;
+                    progressBar.textContent = `${progress}%`;
+
+                    if (chunkNumber === totalChunks) {
+                        showResponse('uploadResponse', data, response.ok);
+                        if (response.ok) {
+                            uploadedFileName = selectedFile.name;
+                            document.getElementById('fileName_extract').value = uploadedFileName;
+                        }
+                    }
+                }
+            } catch (error) {
+                showError('uploadResponse', error.message);
+            }
+        }
+
+        // ===== 知识图谱提取 =====
+        function updateSourceFields() {
+            const sourceType = document.getElementById('sourceType').value;
+            document.querySelectorAll('[id$="Fields"]').forEach(el => {
+                if (el.id.includes('local') || el.id.includes('url') ||
+                    el.id.includes('bilibili') || el.id.includes('wiki')) {
+                    el.classList.add('hidden');
+                }
+            });
+
+            if (sourceType === 'local_file') {
+                document.getElementById('localFileFields').classList.remove('hidden');
+            } else if (sourceType === 'web-url') {
+                document.getElementById('urlFields').classList.remove('hidden');
+            } else if (sourceType === 'bilibili') {
+                document.getElementById('bilibiliFields').classList.remove('hidden');
+            } else if (sourceType === 'Wikipedia') {
+                document.getElementById('wikiFields').classList.remove('hidden');
+            }
+        }
+
+        async function extractGraph() {
+            const formData = new FormData();
+            formData.append('uri', document.getElementById('dbUri').value);
+            formData.append('userName', document.getElementById('dbUsername').value);
+            formData.append('password', document.getElementById('dbPassword').value);
+            formData.append('database', document.getElementById('dbDatabase').value);
+            formData.append('model', document.getElementById('extractModel').value);
+            formData.append('source_type', document.getElementById('sourceType').value);
+
+            const sourceType = document.getElementById('sourceType').value;
+            if (sourceType === 'local_file') {
+                formData.append('file_name', document.getElementById('fileName_extract').value);
+            } else if (sourceType === 'web-url') {
+                formData.append('source_url', document.getElementById('sourceUrl').value);
+            } else if (sourceType === 'bilibili') {
+                formData.append('source_url', document.getElementById('bilibiliUrl').value);
+            } else if (sourceType === 'Wikipedia') {
+                formData.append('wiki_query', document.getElementById('wikiQuery').value);
+            }
+
+            formData.append('token_chunk_size', document.getElementById('tokenChunkSize').value);
+            formData.append('chunk_overlap', document.getElementById('chunkOverlap').value);
+
+            try {
+                showResponse('extractResponse', '正在提取知识图谱，请稍候...', false);
+                const response = await fetch(`${API_BASE_URL}/extract`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                showResponse('extractResponse', data, response.ok);
+                if (response.ok) {
+                    addMessage('assistant', '✅ 知识图谱提取完成！现在可以向我提问了。');
+                }
+            } catch (error) {
+                showError('extractResponse', error.message);
+            }
+        }
+
+        // ===== 后处理任务 =====
+        function selectAllTasks() {
+            document.getElementById('task_similarities').checked = true;
+            document.getElementById('task_fulltext').checked = true;
+            document.getElementById('task_consolidation').checked = true;
+        }
+
+        function clearTaskSelection() {
+            document.getElementById('task_similarities').checked = false;
+            document.getElementById('task_fulltext').checked = false;
+            document.getElementById('task_consolidation').checked = false;
+        }
+
+        async function executePostProcessing() {
+            // 获取选中的任务
+            const tasks = [];
+            if (document.getElementById('task_similarities').checked) {
+                tasks.push('materialize_text_chunk_similarities');
+            }
+            if (document.getElementById('task_fulltext').checked) {
+                tasks.push('enable_fulltext_search');
+            }
+            if (document.getElementById('task_consolidation').checked) {
+                tasks.push('graph_schema_consolidation');
+            }
+
+            if (tasks.length === 0) {
+                alert('请至少选择一个后处理任务');
+                return;
+            }
+
+            try {
+                showResponse('postProcessingResponse', '正在执行后处理任务，请稍候...', false);
+
+                // 使用 FormData 发送所有参数
+                const formData = new FormData();
+                formData.append('tasks', tasks);
+                formData.append('uri', document.getElementById('dbUri').value);
+                formData.append('userName', document.getElementById('dbUsername').value);
+                formData.append('password', document.getElementById('dbPassword').value);
+                formData.append('database', document.getElementById('dbDatabase').value);
+
+                const response = await fetch(`${API_BASE_URL}/post_processing`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                showResponse('postProcessingResponse', data, response.ok);
+
+                if (response.ok) {
+                    // 显示详细结果
+                    if (data.data && data.data.length > 0) {
+                        const summary = data.data.map(item => {
+                            return `\n文件: ${item.filename}\n` +
+                                   `  - 节点数: ${item.nodeCount || 'N/A'}\n` +
+                                   `  - 关系数: ${item.relationshipCount || 'N/A'}\n` +
+                                   `  - 实体节点: ${item.entityNodeCount || 'N/A'}\n` +
+                                   `  - 块节点: ${item.chunkNodeCount || 'N/A'}`;
+                        }).join('\n');
+
+                        addMessage('assistant', `✅ 后处理任务完成！\n${summary}`);
+                    } else {
+                        addMessage('assistant', '✅ 后处理任务完成！');
+                    }
+                }
+            } catch (error) {
+                showError('postProcessingResponse', error.message);
+            }
+        }
+
+        // ===== 聊天功能 =====
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const question = input.value.trim();
+            if (!question) return;
+
+            // 添加用户消息
+            addMessage('user', question);
+            input.value = '';
+
+            // 显示正在输入
+            document.getElementById('typingIndicator').classList.add('show');
+            document.getElementById('sendBtn').disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('uri', document.getElementById('dbUri').value);
+                formData.append('userName', document.getElementById('dbUsername').value);
+                formData.append('password', document.getElementById('dbPassword').value);
+                formData.append('database', document.getElementById('dbDatabase').value);
+                formData.append('model', document.getElementById('chatModel').value);
+                formData.append('question', question);
+                formData.append('document_names', uploadedFileName || '');
+                formData.append('session_id', sessionId);
+                formData.append('mode', 'simple');
+
+                const response = await fetch(`${API_BASE_URL}/chat`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('聊天请求失败');
+                }
+
+                // 处理流式响应
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                const loadingElements = new Map(); // 跟踪工具加载状态
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const text = decoder.decode(value, { stream: true });
+                    const lines = text.split('\n');
+
+                    for (const line of lines) {
+                        if (!line.trim()) continue;
+
+                        try {
+                            const data = JSON.parse(line);
+
+                            if (data.type === 'assistant' && data.content) {
+                                // AI 每次输出都创建独立消息
+                                addMessage('assistant', data.content);
+                            } else if (data.type === 'tool_call') {
+                                // 工具调用作为独立消息
+                                const toolArgs = JSON.stringify(data.content.args, null, 2);
+                                const toolName = data.content.name;
+                                const loadingId = `loading_${toolName}_${Date.now()}`;
+
+                                addToolCallMessage(toolName, toolArgs, loadingId);
+                                loadingElements.set(toolName, loadingId);
+                            } else if (data.type === 'tool_result') {
+                                // 工具结果作为独立消息
+                                const result = data.content.result;
+                                const toolName = data.content.name;
+
+                                // 移除对应的加载状态
+                                const loadingId = loadingElements.get(toolName);
+                                if (loadingId) {
+                                    const loadingElement = document.getElementById(loadingId);
+                                    if (loadingElement) {
+                                        loadingElement.remove();
+                                    }
+                                    loadingElements.delete(toolName);
+                                }
+
+                                addToolResultMessage(toolName, result);
+                            }
+                        } catch (e) {
+                            console.error('解析消息失败:', e, line);
+                        }
+                    }
+                }
+
+            } catch (error) {
+                addMessage('assistant', `❌ 错误: ${error.message}`);
+            } finally {
+                document.getElementById('typingIndicator').classList.remove('show');
+                document.getElementById('sendBtn').disabled = false;
+            }
+        }
+
+        function addMessage(type, content) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.textContent = content;
+
+            const metaDiv = document.createElement('div');
+            metaDiv.className = 'message-meta';
+            metaDiv.textContent = new Date().toLocaleTimeString('zh-CN');
+
+            messageDiv.appendChild(contentDiv);
+            messageDiv.appendChild(metaDiv);
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            return contentDiv;
+        }
+
+        function updateMessageContent(element, content) {
+            element.textContent = content;
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function addToolCallMessage(toolName, toolArgs, loadingId) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message tool';
+
+            const toolCallHtml = `
+                <div class="tool-call">
+                    <div class="tool-header" onclick="toggleTool(this)">
+                        <span class="tool-icon">🔧</span>
+                        <span class="tool-name">${escapeHtml(toolName)}</span>
+                        <span class="tool-toggle">▼</span>
+                    </div>
+                    <div class="tool-details" style="display:none;">
+                        <pre class="tool-args">${escapeHtml(toolArgs)}</pre>
+                    </div>
+                </div>
+                <div class="tool-loading" id="${loadingId}">
+                    <span class="loading-spinner"></span>
+                    <span>正在执行 ${escapeHtml(toolName)}...</span>
+                </div>
+            `;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = toolCallHtml;
+
+            const metaDiv = document.createElement('div');
+            metaDiv.className = 'message-meta';
+            metaDiv.textContent = new Date().toLocaleTimeString('zh-CN');
+
+            messageDiv.appendChild(contentDiv);
+            messageDiv.appendChild(metaDiv);
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function addToolResultMessage(toolName, result) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message tool';
+
+            const isLong = result.length > 200;
+            const toolResultHtml = `
+                <div class="tool-result">
+                    <div class="tool-header" onclick="toggleTool(this)" ${isLong ? '' : 'style="cursor:default;"'}>
+                        <span class="tool-icon">📊</span>
+                        <span class="tool-name">${escapeHtml(toolName)} 结果</span>
+                        ${isLong ? '<span class="tool-toggle">▼</span>' : ''}
+                    </div>
+                    <div class="tool-details" style="display:${isLong ? 'none' : 'block'};">
+                        <pre class="tool-result-content">${escapeHtml(result)}</pre>
+                    </div>
+                </div>
+            `;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = toolResultHtml;
+
+            const metaDiv = document.createElement('div');
+            metaDiv.className = 'message-meta';
+            metaDiv.textContent = new Date().toLocaleTimeString('zh-CN');
+
+            messageDiv.appendChild(contentDiv);
+            messageDiv.appendChild(metaDiv);
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function appendToMessage(element, html) {
+            element.innerHTML += html;
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function toggleTool(header) {
+            const details = header.nextElementSibling;
+            const toggle = header.querySelector('.tool-toggle');
+            if (!toggle) return; // 短结果没有 toggle 按钮
+
+            if (details.style.display === 'none') {
+                details.style.display = 'block';
+                toggle.textContent = '▲';
+            } else {
+                details.style.display = 'none';
+                toggle.textContent = '▼';
+            }
+        }
+
+        function clearChat() {
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.innerHTML = `
+                <div class="message assistant">
+                    <div class="message-content">
+                        对话已清空。我是基于知识图谱的智能助手，请问有什么可以帮助您的？🚀
+                    </div>
+                </div>
+            `;
+            sessionId = 'session_' + Date.now();
+        }
+
+        // ===== 通用功能 =====
+        function showResponse(elementId, data, isSuccess) {
+            const element = document.getElementById(elementId);
+            element.classList.remove('hidden', 'response-success', 'response-error');
+            element.classList.add(isSuccess ? 'response-success' : 'response-error');
+            element.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.classList.remove('hidden', 'response-success', 'response-error');
+            element.classList.add('response-error');
+            element.innerHTML = `<pre style="color: #721c24;">错误: ${message}</pre>`;
+        }
+
+        // 初始化
+        updateSourceFields();
+    </script>
+</body>
+</html>
