@@ -689,6 +689,14 @@
                             </select>
                         </div>
 
+                        <div class="chat-model-select">
+                            <label style="font-size: 13px; font-weight: 500; color: #555;">聊天模式:</label>
+                            <select id="chatMode">
+                                <option value="generate_cypher">Generate Cypher (Cypher 生成)</option>
+                                <option value="graph_retrieve">Graph Retrieve (图检索)</option>
+                            </select>
+                        </div>
+
                         <div class="chat-input-box">
                             <textarea id="chatInput" placeholder="输入你的问题... 例如：这个文档主要讲了什么内容？" onkeypress="handleChatKeyPress(event)"></textarea>
                             <button onclick="sendMessage()" class="send-btn" id="sendBtn">发送</button>
@@ -996,7 +1004,7 @@
                 formData.append('question', question);
                 formData.append('document_names', uploadedFileName || '');
                 formData.append('session_id', sessionId);
-                formData.append('mode', 'simple');
+                formData.append('mode', document.getElementById('chatMode').value);
 
                 const response = await fetch(`${API_BASE_URL}/chat`, {
                     method: 'POST',
@@ -1004,7 +1012,8 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('聊天请求失败');
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText || '聊天请求失败'}`);
                 }
 
                 // 处理流式响应
@@ -1052,15 +1061,20 @@
                                 }
 
                                 addToolResultMessage(toolName, result);
+                            } else if (data.type === 'error') {
+                                // 处理错误消息
+                                addMessage('assistant', `❌ 错误: ${data.content || '未知错误'}`);
                             }
                         } catch (e) {
                             console.error('解析消息失败:', e, line);
+                            // 忽略非 JSON 行
                         }
                     }
                 }
 
             } catch (error) {
-                addMessage('assistant', `❌ 错误: ${error.message}`);
+                console.error('聊天错误:', error);
+                addMessage('assistant', `❌ 聊天出错: ${error.message}\n\n请检查：\n1. 数据库连接是否正常\n2. 是否已上传并提取知识图谱\n3. 后端服务是否运行中`);
             } finally {
                 document.getElementById('typingIndicator').classList.remove('show');
                 document.getElementById('sendBtn').disabled = false;

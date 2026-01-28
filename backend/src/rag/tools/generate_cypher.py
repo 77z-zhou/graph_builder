@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field, ConfigDict
 
 from src.common.prompts import CYPHER_GENERATION_PROMPT, ERROR_TOOL_MESSAGE
 from src.llm import get_llm
-from .utils import CypherQueryCorrector, Schema
+from ..utils import CypherQueryCorrector, Schema
 from config import settings
 
 

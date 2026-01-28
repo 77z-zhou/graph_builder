@@ -179,3 +179,122 @@ CALL db.relationshipTypes() YIELD relationshipType
 WHERE NOT relationshipType  IN ['PART_OF', 'NEXT_CHUNK', 'HAS_ENTITY', '_Bloom_Perspective_','FIRST_CHUNK','SIMILAR','IN_COMMUNITY','PARENT_COMMUNITY'] 
 RETURN relationshipType order by relationshipType
 """
+
+
+
+
+# Retriever query for graph rag
+RETRIEVER_QUERY = """
+WITH node as chunk, score
+// 检索chunk关联的Document
+MATCH (chunk)-[:PART_OF]->(d:Document)
+// 聚合chunk和score,并计算所属Document下chunk的平均分
+WITH d, collect(DISTINCT {{chunk: chunk, score: score}}) AS chunks, avg(score) as avg_score
+// fetch entities
+CALL {{ 
+    WITH chunks
+    UNWIND chunks as chunkScore
+    WITH chunkScore.chunk as chunk
+    // 获取chunk下关联的所有实体
+    OPTIONAL MATCH (chunk)-[:HAS_ENTITY]->(e)
+    // 统计每个实体所关联的chunk的数量, 降序排序取前 no_of_entities 个实体
+    WITH e, count(*) AS numChunks 
+    ORDER BY numChunks DESC 
+    LIMIT {no_of_entities}
+
+    // 针对每个实体, 根据限制条件找到(0,1,2)跳路径path
+    WITH 
+    CASE 
+        WHEN e.embedding IS NULL OR ({embedding_match_min} <= vector.similarity.cosine($query_vector, e.embedding) AND vector.similarity.cosine($query_vector, e.embedding) <= {embedding_match_max}) THEN 
+            collect {{
+                OPTIONAL MATCH path=(e)(()-[rels:!HAS_ENTITY&!PART_OF]-()){{0,1}}(:!Chunk&!Document&!__Community__) 
+                RETURN path LIMIT {entity_limit_minmax_case}
+            }}
+        WHEN e.embedding IS NOT NULL AND vector.similarity.cosine($query_vector, e.embedding) >  {embedding_match_max} THEN
+            collect {{
+                OPTIONAL MATCH path=(e)(()-[rels:!HAS_ENTITY&!PART_OF]-()){{0,2}}(:!Chunk&!Document&!__Community__) 
+                RETURN path LIMIT {entity_limit_max_case} 
+            }} 
+        ELSE 
+            collect {{ 
+                MATCH path=(e) 
+                RETURN path 
+            }}
+    END AS paths, e
+
+    // 去重路径和实体,且将路径展平为一个数组中
+   WITH apoc.coll.toSet(apoc.coll.flatten(collect(DISTINCT paths))) AS paths,
+        collect(DISTINCT e) AS entities
+
+   // 收集路径上的 relationship 和 node
+   RETURN
+       collect {{
+           UNWIND paths AS p
+           UNWIND relationships(p) AS r
+           RETURN DISTINCT r
+       }} AS rels,
+       collect {{
+           UNWIND paths AS p
+           UNWIND nodes(p) AS n
+           RETURN DISTINCT n
+       }} AS nodes,
+       entities
+}}
+
+WITH d, avg_score,
+    [c IN chunks | c.chunk.text] AS texts,
+    [c IN chunks | {{id: c.chunk.id, score: c.score}}] AS chunkdetails,
+    [n IN nodes | elementId(n)] AS entityIds,
+    [r IN rels | elementId(r)] AS relIds,
+    
+    // 移出label是__Entity__的node, 且构造 Label:n.id:n.description 的格式 为nodeTexts
+    apoc.coll.sort([
+        n IN nodes |
+        coalesce(apoc.coll.removeAll(labels(n), ['__Entity__'])[0], "") + ":" +
+        coalesce(
+            n.id,
+            n[head([k IN keys(n) WHERE k =~ "(?i)(name|title|id|description)$"])],
+            ""
+        ) +
+        (CASE WHEN n.description IS NOT NULL THEN " (" + n.description + ")" ELSE "" END)
+    ]) AS nodeTexts,
+
+    // 移出label是__Entity__的node, 且构造 Label1:n1.id REL Label2:n2.id 格式为 relTexts 
+    apoc.coll.sort([
+        r IN rels |
+        coalesce(apoc.coll.removeAll(labels(startNode(r)), ['__Entity__'])[0], "") + ":" +
+        coalesce(
+            startNode(r).id,
+            startNode(r)[head([k IN keys(startNode(r)) WHERE k =~ "(?i)(name|title|id|description)$"])],
+            ""
+        ) + " " + type(r) + " " +
+        coalesce(apoc.coll.removeAll(labels(endNode(r)), ['__Entity__'])[0], "") + ":" +
+        coalesce(
+            endNode(r).id,
+            endNode(r)[head([k IN keys(endNode(r)) WHERE k =~ "(?i)(name|title|id|description)$"])],
+            ""
+        )
+    ]) AS relTexts,
+    entities
+
+// 组合所有chunk的 text, 并加上 entityTexts 和 relTexts 构造为 text
+WITH d, avg_score, chunkdetails, entityIds, relIds,
+    "Text Content:\n" + apoc.text.join(texts, "\n----\n") +
+    "\n----\nEntities:\n" + apoc.text.join(nodeTexts, "\n") +
+    "\n----\nRelationships:\n" + apoc.text.join(relTexts, "\n") AS text,
+    entities
+
+// text为一个Document下与问题相关的chunk的text组合, avg_score是这些chunks的平均分
+RETURN
+   text,
+   avg_score AS score,
+   {{
+       length: size(text),
+       source: COALESCE(CASE WHEN d.url IS NULL OR d.url = "" THEN d.fileName ELSE d.url END, d.fileName),
+       chunkdetails: chunkdetails,
+       entities : {{
+           entityids: entityIds,
+           relationshipids: relIds
+       }}
+   }} AS metadata
+"""

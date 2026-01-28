@@ -156,10 +156,71 @@ Files are uploaded in chunks (`backend/chunks/`), merged (`backend/merged_files/
 - **Error handling** with try-except blocks and status tracking in Document nodes
 - **Dependency injection** via FastAPI's `Depends()` for credentials
 
+## Development Commands
+
+**Install dependencies:**
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+**Start backend server:**
+```bash
+cd backend
+python app.py
+# Server runs on http://0.0.0.0:7860
+```
+
+**Start frontend test server (optional):**
+```bash
+cd frontend
+python -m http.server 8000
+# Then open http://localhost:8000/test.html in browser
+```
+
+**Check Neo4j connection:**
+- Use `POST /backend_connection_configuration` endpoint
+- Or use the frontend test interface at `test.html`
+
+## Graph RAG Agent
+
+The system includes a Graph RAG agent for natural language querying:
+- Located in `backend/src/rag/simple_graph_rag/`
+- Uses LangGraph with `InMemorySaver` for state management
+- Implements `GenerateCypherTool` for Cypher query generation
+- Accessible via `POST /chat` endpoint with `mode=simple`
+- Supports streaming responses via Server-Sent Events (SSE)
+
+## Frontend Architecture
+
+The frontend is a **static HTML testing platform** (no build process required):
+- **test.html** - Main API testing interface for all endpoints
+- **graph-chat.html** - Dedicated Graph RAG chat interface
+- Pure HTML/CSS/JavaScript - can be opened directly in browser
+- For production testing, use simple HTTP server: `python -m http.server 8000`
+
+## Key Data Flows
+
+**File Upload → Extraction Flow:**
+1. `POST /upload` - Chunked file upload (5MB chunks)
+2. Files stored in `backend/chunks/`, then merged to `backend/merged_files/`
+3. `POST /extract` with `source_type="local_file"` - Triggers extraction
+4. Processing handled by `processing_source()` in `service.py`
+5. Status updates written to Document node in Neo4j
+
+**Graph RAG Chat Flow:**
+1. `POST /chat` with `mode=simple`
+2. `SimpleGraphRagAgent` creates LangGraph agent with `GenerateCypherTool`
+3. Agent generates Cypher queries using LLM
+4. Queries executed on Neo4j, results streamed back via SSE
+
 ## Important Notes
 
 - The codebase uses **mixed Chinese/English comments** - this is intentional
-- **No automated tests** currently exist - testing is done manually via `test.ipynb` Jupyter notebook
+- **No automated tests** currently exist - testing is done manually via `test.ipynb` Jupyter notebook or frontend HTML pages
 - Document status is tracked in Neo4j: "New", "Processing", "Completed", "Failed", "Cancelled"
 - Token usage is tracked and can be retrieved from the `UniversalTokenUsageHandler`
 - The system supports processing files from multiple sources: local files, web URLs, Bilibili videos, Wikipedia
+- Chunked upload uses 5MB chunks to handle large files and avoid timeouts
+- Vector index named "vector" must exist in Neo4j for embedding similarity search
+- GDS (Graph Data Science) library is optional - system checks for its availability

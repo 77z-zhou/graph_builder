@@ -211,3 +211,4 @@ backend/chunks/
 backend/local_model/
 backend/merged_files/
 test.ipynb
+test.py

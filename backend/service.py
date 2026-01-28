@@ -5,7 +5,7 @@ from src.graph_llm.graph_transform import LLMGraphTransformer
 from src.common.prompts import ADDITIONAL_INSTRUCTIONS, GRAPH_CLEANUP_PROMPT
 from src.common.exception import GraphBuilderException
 from src.llm import get_llm
-from src.rag.simple_graph_rag.agent import SimpleGraphRagAgent
+from src.rag.agent import SimpleGraphRagAgent
 from src.embedding import load_embedding_model
 
 from app_entities import Neo4jCredentials, SourceNode, SourceScanExtractParams
@@ -686,10 +686,10 @@ async def create_vector_fulltext_indexes(credentials):
 
 
 # ============= Graph Chat相关 ===============
-async def simple_graph_chat(credentials, model, question, document_names, session_id):
+async def simple_graph_chat(credentials, model, question, document_names, session_id, mode):
     """ 简单的图数据库聊天(cypher 生成)  """
     graph = create_graph_database_connection(credentials,refresh_schema=True)
-    simple_rag_agent = SimpleGraphRagAgent(model, graph)
+    simple_rag_agent = SimpleGraphRagAgent(model, graph, mode=mode, file_names=document_names)
     agent = simple_rag_agent._create_agent()
     input = {
         "question": question,

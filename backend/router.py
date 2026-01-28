@@ -35,10 +35,9 @@ async def chat_bot(
     mode=Form(None)
 ):
     """ 知识图谱聊天 """
-
-    if mode == "simple":
+    try:
         return StreamingResponse(
-            simple_graph_chat(credentials, model, question, document_names, session_id),
+            simple_graph_chat(credentials, model, question, document_names, session_id, mode),
             media_type="text/event-stream",
             headers={
                 "Cache-Control": "no-cache",
@@ -46,6 +45,9 @@ async def chat_bot(
                 "X-Accel-Buffering": "no"  # 禁用 nginx 缓冲
             }
         )
+    finally:
+        gc.collect()
+
 
    
 
