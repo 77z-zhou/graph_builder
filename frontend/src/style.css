@@ -1,0 +1,467 @@
+:root {
+  --primary-color: #667eea;
+  --primary-dark: #5568d3;
+  --secondary-color: #6c757d;
+  --success-color: #48bb78;
+  --danger-color: #f56565;
+  --warning-color: #ed8936;
+  --background: #f7fafc;
+  --surface: #ffffff;
+  --text-primary: #2d3748;
+  --text-secondary: #718096;
+  --border-color: #e2e8f0;
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Dark theme - soft and elegant */
+:root.dark {
+  --background: #0f0f11;
+  --surface: #1a1a1d;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --border-color: #2a2a2d;
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --el-fill-color-blank: #2a2a2d;
+  --el-fill-color: #2a2a2d;
+  --el-bg-color: #1a1a1d;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--background);
+  color: var(--text-primary);
+  line-height: 1.6;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Dark theme scrollbar */
+:root.dark ::-webkit-scrollbar-track {
+  background: #0f0f11;
+}
+
+:root.dark ::-webkit-scrollbar-thumb {
+  background: #3a3a3d;
+}
+
+:root.dark ::-webkit-scrollbar-thumb:hover {
+  background: #4a4a4d;
+}
+
+/* Element Plus dark theme adjustments - soft and modern */
+:root.dark .el-card {
+  background: var(--surface);
+  border-color: transparent;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+:root.dark .el-card__header {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+:root.dark .el-button--default {
+  background: #2a2a2d;
+  border-color: transparent;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+:root.dark .el-button--default:hover {
+  background: #3a3a3d;
+  border-color: transparent;
+}
+
+:root.dark .el-input__wrapper {
+  background: #2a2a2d !important;
+  box-shadow: none !important;
+  border: 1px solid transparent;
+}
+
+:root.dark .el-input__wrapper:hover {
+  border-color: #3a3a3d;
+  background: #2a2a2d !important;
+}
+
+:root.dark .el-input__wrapper.is-focus {
+  background: #2a2a2d !important;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+:root.dark .el-input__inner {
+  color: #ffffff;
+}
+
+:root.dark .el-input__inner::placeholder {
+  color: #888888;
+}
+
+:root.dark .el-textarea__inner::placeholder {
+  color: #888888;
+}
+
+:root.dark .el-textarea__inner {
+  background: #2a2a2d;
+  border-color: transparent;
+  color: #ffffff;
+}
+
+:root.dark .el-textarea__inner:hover {
+  border-color: #3a3a3d;
+}
+
+:root.dark .el-textarea__inner:focus {
+  border-color: var(--primary-color);
+}
+
+:root.dark .el-select .el-input__wrapper {
+  background: #2a2a2d !important;
+}
+
+:root.dark .el-select:hover .el-input__wrapper {
+  background: #2a2a2d !important;
+}
+
+:root.dark .el-select .el-input__wrapper.is-focus {
+  background: #2a2a2d !important;
+}
+
+:root.dark .el-select .el-input__inner {
+  background: transparent !important;
+}
+
+:root.dark input.el-input__inner {
+  background: transparent !important;
+}
+
+:root.dark .el-input .el-input__wrapper {
+  background: #2a2a2d !important;
+}
+
+:root.dark .el-input .el-input__clear,
+:root.dark .el-input .el-input__password {
+  background: transparent !important;
+}
+
+:root.dark textarea.el-textarea__inner {
+  background: #2a2a2d !important;
+}
+
+:root.dark .el-textarea .el-textarea__inner {
+  background: #2a2a2d !important;
+}
+
+/* Extra strong overrides for input backgrounds */
+:root.dark .el-input__wrapper,
+:root.dark .el-input__inner,
+:root.dark .el-textarea__inner,
+:root.dark .el-select .el-input__wrapper,
+:root.dark input,
+:root.dark textarea {
+  background-color: #2a2a2d !important;
+}
+
+:root.dark .el-select .el-input__inner {
+  background-color: transparent !important;
+}
+
+:root.dark .el-input__wrapper::after,
+:root.dark .el-input__wrapper::before {
+  background: transparent !important;
+}
+
+:root.dark [class*="el-input"] [class*="wrapper"] {
+  background: #2a2a2d !important;
+}
+
+:root.dark [class*="el-input"] [class*="inner"] {
+  background: transparent !important;
+}
+
+/* Universal input background fix */
+:root.dark input[type="text"],
+:root.dark input[type="password"],
+:root.dark input[type="number"],
+:root.dark textarea {
+  background-color: #2a2a2d !important;
+  color: #ffffff !important;
+}
+
+:root.dark .el-select__input {
+  background-color: transparent !important;
+}
+
+:root.dark .el-select__selected-item {
+  color: #ffffff !important;
+}
+
+:root.dark .el-select__wrapper {
+  background-color: #2a2a2d !important;
+}
+
+:root.dark .el-select__wrapper:hover {
+  background-color: #2a2a2d !important;
+}
+
+:root.dark .el-select__wrapper.is-focused {
+  background-color: #2a2a2d !important;
+}
+
+/* Maximum specificity overrides */
+html.dark:root .el-input__wrapper,
+html.dark:root .el-select .el-input__wrapper,
+html.dark:root .el-textarea__inner,
+html.dark:root input,
+html.dark:root textarea {
+  background-color: #2a2a2d !important;
+}
+
+html.dark:root .el-input__inner,
+html.dark:root .el-select .el-input__inner {
+  background-color: transparent !important;
+}
+
+html.dark body .el-input__wrapper,
+html.dark body .el-select .el-input__wrapper {
+  background-color: #2a2a2d !important;
+  box-shadow: none !important;
+}
+
+html.dark body .el-input__inner,
+html.dark body .el-select .el-input__inner {
+  background-color: transparent !important;
+}
+
+/* Direct html tag targeting */
+html.dark .el-input__wrapper {
+  background-color: #2a2a2d !important;
+  box-shadow: none !important;
+}
+
+html.dark .el-input__inner {
+  background-color: transparent !important;
+}
+
+html.dark .el-select .el-input__wrapper {
+  background-color: #2a2a2d !important;
+}
+
+html.dark .el-select .el-input__inner {
+  background-color: transparent !important;
+}
+
+html.dark .el-textarea__inner {
+  background-color: #2a2a2d !important;
+}
+
+html.dark input,
+html.dark textarea {
+  background-color: #2a2a2d !important;
+}
+
+html.dark .el-select__input {
+  background-color: transparent !important;
+}
+
+/* Last resort - universal selector */
+html.dark * .el-input__wrapper,
+html.dark * .el-input__inner,
+html.dark * .el-select .el-input__wrapper,
+html.dark * .el-select .el-input__inner {
+  background-color: #2a2a2d !important;
+}
+
+html.dark * .el-select .el-input__inner,
+html.dark * .el-input__inner {
+  background-color: transparent !important;
+}
+
+/* Override inline styles */
+html.dark [style*="background"] .el-input__wrapper,
+html.dark [style*="background"] .el-input__inner {
+  background: #2a2a2d !important;
+}
+
+
+:root.dark .el-select-dropdown {
+  background: #1a1a1d !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+:root.dark .el-select-dropdown__item {
+  color: #ffffff;
+}
+
+:root.dark .el-select-dropdown__item.hover,
+:root.dark .el-select-dropdown__item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:root.dark .el-select-dropdown__item.is-selected {
+  background: rgba(102, 126, 234, 0.2) !important;
+  color: #ffffff;
+}
+
+:root.dark .el-select-dropdown__item.selected {
+  background: rgba(102, 126, 234, 0.2) !important;
+  color: #ffffff;
+}
+
+:root.dark .el-select-dropdown .el-scrollbar {
+  background: #1a1a1d;
+}
+
+:root.dark .el-select-dropdown__wrap {
+  background: #1a1a1d;
+}
+
+:root.dark .el-select-dropdown__list {
+  background: #1a1a1d;
+}
+
+:root.dark .el-popper {
+  background: #1a1a1d !important;
+}
+
+:root.dark .el-select__popper {
+  background: #1a1a1d !important;
+}
+
+:root.dark .el-select-dropdown .el-vl-scrollbar {
+  background: #1a1a1d;
+}
+
+:root.dark .el-select-dropdown .el-vl-scrollbar__wrap {
+  background: #1a1a1d;
+}
+
+/* Additional dark theme select dropdown fixes */
+:root.dark .el-select-dropdown.is-multiple .el-select-dropdown__item.selected {
+  color: #ffffff;
+}
+
+:root.dark .el-select-group__title {
+  color: #b0b0b0;
+}
+
+:root.dark .el-select-group__wrap {
+  background: #1a1a1d;
+}
+
+:root.dark [class*="el-select-dropdown"] {
+  background: #1a1a1d !important;
+}
+
+:root.dark .el-table {
+  background: transparent;
+  color: #ffffff;
+}
+
+:root.dark .el-table th.el-table__cell {
+  background: #2a2a2d;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+:root.dark .el-table tr {
+  background: transparent;
+}
+
+:root.dark .el-table td.el-table__cell {
+  border-color: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+:root.dark .el-table__body tr:hover > td {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+:root.dark .el-tag {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: transparent;
+  color: var(--text-primary);
+}
+
+:root.dark .el-tag--success {
+  background: rgba(72, 187, 120, 0.15);
+  border-color: transparent;
+  color: #6ee7b7;
+}
+
+:root.dark .el-tag--warning {
+  background: rgba(237, 137, 54, 0.15);
+  border-color: transparent;
+  color: #fbbf24;
+}
+
+:root.dark .el-tag--danger {
+  background: rgba(245, 101, 101, 0.15);
+  border-color: transparent;
+  color: #f87171;
+}
+
+:root.dark .el-tag--info {
+  background: rgba(167, 139, 250, 0.15);
+  border-color: transparent;
+  color: #a78bfa;
+}
+
+:root.dark .el-alert {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+:root.dark .el-alert__title {
+  color: #ffffff;
+}
+
+:root.dark .el-alert__description {
+  color: #b0b0b0;
+}
+
+:root.dark .el-upload-dragger {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+:root.dark .el-upload-dragger:hover {
+  border-color: var(--primary-color);
+  background: rgba(102, 126, 234, 0.05);
+}
+
+:root.dark .el-progress-bar__outer {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+

@@ -212,3 +212,50 @@ backend/local_model/
 backend/merged_files/
 test.ipynb
 test.py
+
+# ============== Frontend (Vue + Vite) ==============
+# Node modules
+node_modules/
+
+# Build outputs
+frontend/dist/
+frontend/build/
+
+# Vite cache
+frontend/.vite/
+
+# Local environment files
+frontend/.env.local
+frontend/.env.*.local
+
+# Logs
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+frontend/*.log
+
+# Editor directories and files
+frontend/.vscode/*
+!frontend/.vscode/extensions.json
+frontend/.idea
+frontend/.DS_Store
+frontend/*.suo
+frontend/*.ntvs*
+frontend/*.njsproj
+frontend/*.sln
+frontend/*.sw?
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+~$*

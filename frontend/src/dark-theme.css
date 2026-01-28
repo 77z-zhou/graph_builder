@@ -1,0 +1,129 @@
+/* Dark theme overrides - MUST be loaded last */
+
+/* Only apply dark styles when html.dark is present */
+html.dark .el-input__wrapper,
+html.dark .el-select .el-input__wrapper,
+html.dark .el-textarea__inner {
+  background-color: #2a2a2d !important;
+  box-shadow: none !important;
+  border-image: none !important;
+}
+
+html.dark .el-input__inner,
+html.dark .el-select .el-input__inner,
+html.dark .el-select__input {
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+html.dark input,
+html.dark textarea {
+  background-color: #2a2a2d !important;
+  color: #ffffff !important;
+}
+
+html.dark .el-select__wrapper {
+  background-color: #2a2a2d !important;
+  box-shadow: none !important;
+}
+
+html.dark .el-input__wrapper:hover,
+html.dark .el-select__wrapper:hover,
+html.dark .el-input__wrapper.is-focus,
+html.dark .el-select__wrapper.is-focused {
+  background-color: #2a2a2d !important;
+  box-shadow: none !important;
+}
+
+/* Input number buttons */
+html.dark .el-input-number__decrease,
+html.dark .el-input-number__increase {
+  background-color: #3a3a3d !important;
+  color: #d0d0d0 !important;
+  border-color: #4a4a4d !important;
+}
+
+html.dark .el-input-number__decrease:hover,
+html.dark .el-input-number__increase:hover {
+  background-color: #4a4a4d !important;
+  color: #ffffff !important;
+}
+
+/* Regular buttons */
+html.dark .el-button--default {
+  background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
+  color: #e2e8f0 !important;
+  border: 1px solid #4a5568 !important;
+  font-weight: 500 !important;
+}
+
+html.dark .el-button--default:hover {
+  background: linear-gradient(135deg, #5a6578 0%, #3d4758 100%) !important;
+  color: #ffffff !important;
+  border-color: #667eea !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+html.dark .el-button--default:active {
+  background: linear-gradient(135deg, #3d4758 0%, #2d3748 100%) !important;
+  transform: translateY(0);
+}
+
+/* Icon buttons */
+html.dark .el-button.is-circle {
+  background-color: #3a3a3d !important;
+}
+
+html.dark .el-button.is-circle:hover {
+  background-color: #4a4a4d !important;
+}
+
+/* Button with icons */
+html.dark .el-button .el-icon {
+  color: #d0d0d0 !important;
+}
+
+html.dark .el-button:hover .el-icon {
+  color: #ffffff !important;
+}
+
+/* Append slot buttons */
+html.dark .el-input-group__append,
+html.dark .el-input-group__prepend {
+  background-color: #3a3a3d !important;
+}
+
+html.dark .el-input-group__append .el-button,
+html.dark .el-input-group__prepend .el-button {
+  background-color: transparent !important;
+  color: #d0d0d0 !important;
+}
+
+html.dark .el-input-group__append .el-button:hover,
+html.dark .el-input-group__prepend .el-button:hover {
+  background-color: #4a4a4d !important;
+  color: #ffffff !important;
+}
+
+/* All button icons in dark theme */
+html.dark .el-button--default .el-icon,
+html.dark .el-button--default .el-icon svg,
+html.dark .el-input-number__decrease .el-icon,
+html.dark .el-input-number__increase .el-icon,
+html.dark .el-input-number__decrease .el-icon svg,
+html.dark .el-input-number__increase .el-icon svg {
+  color: #d0d0d0 !important;
+  fill: #d0d0d0 !important;
+}
+
+html.dark .el-button--default:hover .el-icon,
+html.dark .el-button--default:hover .el-icon svg,
+html.dark .el-input-number__decrease:hover .el-icon,
+html.dark .el-input-number__increase:hover .el-icon,
+html.dark .el-input-number__decrease:hover .el-icon svg,
+html.dark .el-input-number__increase:hover .el-icon svg {
+  color: #ffffff !important;
+  fill: #ffffff !important;
+}
+

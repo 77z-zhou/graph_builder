@@ -1,272 +1,172 @@
-# 知识图谱构建器 - API 测试平台使用说明
+# 知识图谱构建器前端 - Knowledge Graph Builder Frontend
 
-## 📋 概述
+基于 Vue 3 + Vite + Element Plus 的现代化前端项目
 
-这是一个用于测试知识图谱构建器 API 的前端测试平台，提供直观的用户界面来测试所有后端接口。
+## 📋 功能特性
 
-## 🚀 快速开始
+- ✨ **Vue 3** - 使用最新的 Vue 3 Composition API
+- 🚀 **Vite** - 极速的开发体验
+- 🎨 **Element Plus** - 优秀的 Vue 3 UI 组件库
+- 📦 **Pinia** - Vue 3 官方推荐的状态管理
+- 🔄 **Vue Router** - 官方路由管理器
+- 💬 **Graph RAG Chat** - 与知识图谱对话功能
 
-### 1. 启动后端服务
+## 🛠️ 技术栈
+
+- **框架**: Vue 3.4+
+- **构建工具**: Vite 5.2+
+- **UI 组件**: Element Plus 2.7+
+- **状态管理**: Pinia 2.1+
+- **路由**: Vue Router 4.3+
+- **HTTP 客户端**: Axios 1.6+
+- **CSS 预处理**: 原生 CSS (支持 CSS Variables)
+
+## 📦 安装依赖
 
 ```bash
-cd backend
-python app.py
+cd frontend-vue
+npm install
 ```
 
-后端将在 `http://localhost:7860` 运行
+## 🚀 开发
 
-### 2. 打开测试页面
+```bash
+npm run dev
+```
 
-在浏览器中打开 `frontend/test.html` 文件，或者直接双击该文件。
+应用将在 `http://localhost:3000` 启动
 
-## 🎯 功能模块
+## 🏗️ 构建
 
-### 1. Neo4j 数据库连接
+```bash
+npm run build
+```
 
-**功能：** 测试与 Neo4j 数据库的连接
+构建产物将输出到 `dist` 目录
 
-**必填字段：**
-- 数据库 URI：例如 `bolt://127.0.0.1:7687`
-- 用户名：例如 `neo4j`
-- 密码：你的数据库密码
+## 📁 项目结构
 
-**可选字段：**
-- 数据库名称：默认 `neo4j`
-- 邮箱：用于日志记录
+```
+frontend-vue/
+├── public/                 # 静态资源
+├── src/
+│   ├── api/               # API 接口
+│   │   └── graph.js      # 图谱相关 API
+│   ├── assets/           # 资源文件
+│   ├── components/       # 公共组件
+│   │   └── ChatPanel.vue # 聊天面板组件
+│   ├── router/           # 路由配置
+│   │   └── index.js      # 路由定义
+│   ├── stores/           # Pinia 状态管理
+│   │   ├── neo4j.js      # Neo4j 连接状态
+│   │   └── documents.js  # 文档状态管理
+│   ├── views/            # 页面组件
+│   │   ├── Layout.vue    # 主布局
+│   │   └── Dashboard.vue # 仪表盘页面
+│   ├── App.vue           # 根组件
+│   ├── main.js           # 入口文件
+│   └── style.css         # 全局样式
+├── index.html            # HTML 模板
+├── package.json          # 项目配置
+├── vite.config.js        # Vite 配置
+└── README.md             # 项目说明
+```
 
-**操作：** 点击 "🔍 测试连接" 按钮
+## 🔧 配置说明
 
-**成功标志：** 状态徽章从 "未连接" 变为 "已连接"
+### 环境变量
 
----
+创建 `.env.local` 文件配置环境变量：
 
-### 2. 文件上传 (分块上传)
+```bash
+# API 基础 URL
+VITE_API_BASE_URL=http://localhost:7860
+```
 
-**功能：** 上传文档文件到系统，支持大文件分块上传
+### API 代理
 
-**步骤：**
+在 `vite.config.js` 中已配置代理，开发环境下 `/api` 请求将转发到后端服务器：
 
-1. **选择模型**
-   - DeepSeek Chat
-   - Qwen 3 Max
-
-2. **选择文件**
-   - 点击上传区域或拖拽文件
-   - 支持格式：PDF, TXT, DOCX, DOC
-   - 显示文件信息（文件名、大小、类型）
-
-3. **上传文件**
-   - 系统自动将文件分成 5MB 的块
-   - 显示实时上传进度
-   - 上传成功后自动填充文件名到提取表单
-
-**注意事项：**
-- 上传前请确保已配置数据库连接
-- 大文件会被自动分块上传，避免超时
-
----
-
-### 3. 知识图谱提取
-
-**核心功能：** 从不同数据源提取知识图谱并存储到 Neo4j
-
-#### 数据源类型
-
-##### A. 本地文件
-
-**适用场景：** 处理已上传到服务器的文件
-
-**必填字段：**
-- 文件名：从上传成功后自动填充，或手动输入
-
-##### B. 网页 URL
-
-**适用场景：** 从网页内容提取知识图谱
-
-**必填字段：**
-- URL 地址：例如 `https://example.com/article`
-
-##### C. Bilibili 视频
-
-**适用场景：** 从 Bilibili 视频字幕提取知识图谱
-
-**必填字段：**
-- Bilibili URL：例如 `https://www.bilibili.com/video/BV...`
-
-##### D. 维基百科
-
-**适用场景：** 从维基百科文章提取知识图谱
-
-**必填字段：**
-- 搜索关键词：例如 `Artificial Intelligence`
-
-#### 高级参数
-
-**分块参数：**
-- Token 块大小：默认 10000，控制每个文本块的 token 数量
-- 块重叠大小：默认 200，相邻块之间的重叠 token 数
-- 组合块数量：默认 5，将多个小块组合成大块进行实体识别
-
-**过滤参数：**
-- 允许的节点类型：逗号分隔，例如 `Person,Organization,Location`
-- 允许的关系类型：逗号分隔，例如 `WORKS_AT,LOCATED_IN`
-
-**其他参数：**
-- 语言：中文 / English
-- 额外指令：自定义 LLM 提取指令
-- 重试条件：
-  - `start_from_beginning` - 从头开始处理
-  - `delete_entities_and_start_from_beginning` - 删除现有实体并重新开始
-  - `start_from_last_processed_position` - 从上次位置继续
-
-**操作：** 点击 "⚗️ 提取知识图谱" 按钮
-
----
-
-## 📊 响应历史
-
-- 自动记录所有 API 调用历史
-- 显示时间戳、操作类型、成功/失败状态
-- 保留最近 10 条记录
-- 支持清空历史
-
----
-
-## 🔧 典型使用流程
-
-### 流程 1: 处理本地文件
-
-1. 配置 Neo4j 数据库连接 → 测试连接
-2. 选择模型 → 选择文件 → 上传文件
-3. 等待上传完成，文件名自动填充
-4. 配置提取参数（可选）
-5. 点击 "提取知识图谱"
-
-### 流程 2: 处理网页内容
-
-1. 配置 Neo4j 数据库连接 → 测试连接
-2. 选择 "网页 URL" 数据源
-3. 输入 URL 地址
-4. 配置提取参数（可选）
-5. 点击 "提取知识图谱"
-
-### 流程 3: 处理 Bilibili 视频
-
-1. 配置 Neo4j 数据库连接 → 测试连接
-2. 选择 "Bilibili 视频" 数据源
-3. 输入 Bilibili 视频 URL
-4. 配置提取参数（可选）
-5. 点击 "提取知识图谱"
-
----
-
-## 📝 API 响应格式
-
-### 成功响应示例
-
-```json
-{
-  "status": "Success",
-  "message": "Source Node Created Successfully",
-  "data": {
-    "fileName": "example.pdf",
-    "fileSize": 1234567,
-    "chunkNodeCount": 150,
-    "entityNodeCount": 340,
-    "nodeCount": 490,
-    "relationshipCount": 680
+```javascript
+server: {
+  port: 3000,
+  proxy: {
+    '/api': {
+      target: 'http://localhost:7860',
+      changeOrigin: true,
+      rewrite: (path) => path.replace(/^\/api/, '')
+    }
   }
 }
 ```
 
-### 失败响应示例
+## 📝 核心功能说明
 
-```json
-{
-  "status": "Failed",
-  "error": "Error message details",
-  "message": "Unable to extract knowledge graph"
+### 1. Neo4j 连接管理
+
+- 配置并测试 Neo4j 数据库连接
+- 连接状态实时显示
+- 配置信息保存在 Pinia store 中
+
+### 2. 文件上传
+
+- 支持拖拽上传
+- 5MB 分块上传大文件
+- 实时上传进度显示
+- 支持 PDF, TXT, DOCX 等格式
+
+### 3. 知识图谱提取
+
+- 支持多种数据源：本地文件、网页 URL、Bilibili、Wikipedia
+- 可配置提取参数
+- 提取进度实时反馈
+
+### 4. Graph RAG 聊天
+
+- 与知识图谱进行对话
+- 流式响应显示
+- 消息历史记录
+
+## 🎨 样式自定义
+
+项目使用 CSS 自定义属性（CSS Variables）定义主题颜色，可在 `src/style.css` 中修改：
+
+```css
+:root {
+  --primary-color: #667eea;
+  --primary-dark: #5568d3;
+  --background: #f7fafc;
+  --surface: #ffffff;
+  /* ... 更多变量 */
 }
 ```
 
----
+## 🔗 后端 API 对接
 
-## ⚠️ 故障排除
+确保后端服务运行在 `http://localhost:7860`，或修改 `.env.local` 中的 `VITE_API_BASE_URL`。
 
-### 问题 1: 数据库连接失败
+主要 API 端点：
 
-**解决方案：**
-- 检查 Neo4j 服务是否运行
-- 验证 URI、用户名、密码是否正确
-- 确认数据库端口（默认 7687）未被防火墙阻止
+- `POST /backend_connection_configuration` - 测试 Neo4j 连接
+- `POST /upload` - 文件上传
+- `POST /extract` - 知识图谱提取
+- `POST /chat` - Graph RAG 聊天
 
-### 问题 2: 文件上传失败
+## 📱 浏览器支持
 
-**解决方案：**
-- 确保后端服务正在运行
-- 检查文件格式是否支持
-- 验证文件大小，尝试较小文件
+- Chrome >= 87
+- Firefox >= 78
+- Safari >= 14
+- Edge >= 88
 
-### 问题 3: 知识图谱提取超时
+## 🤝 开发建议
 
-**解决方案：**
-- 检查网络连接
-- 减小 Token 块大小
-- 增加 LLM API 超时时间
-- 查看后端日志获取详细错误信息
+1. **组件开发**: 遵循单一职责原则，保持组件简洁
+2. **状态管理**: 合理使用 Pinia stores，避免过度使用全局状态
+3. **API 调用**: 统一使用 `src/api` 目录下的封装方法
+4. **样式编写**: 优先使用 Element Plus 组件样式，必要时自定义
+5. **代码规范**: 建议使用 ESLint 进行代码检查
 
-### 问题 4: CORS 错误
+## 📄 许可证
 
-**解决方案：**
-- 确保后端 CORS 中间件配置正确
-- 使用 HTTP 服务器而不是直接打开 HTML 文件
-- 示例：`python -m http.server 8000` 在 frontend 目录
-
----
-
-## 🔐 安全建议
-
-- ⚠️ **不要在生产环境中暴露数据库密码**
-- ⚠️ **仅在测试环境使用此页面**
-- ⚠️ **定期更换 API 密钥和数据库密码**
-- ⚠️ **不要在公共网络中测试**
-
----
-
-## 📚 技术栈
-
-- **前端：** 纯 HTML + CSS + JavaScript（无需构建）
-- **后端：** FastAPI + Python
-- **数据库：** Neo4j
-- **LLM：** DeepSeek / Qwen
-
----
-
-## 🎨 界面特性
-
-- 响应式设计，支持移动端
-- 实时进度显示
-- 拖拽上传支持
-- 自动文件分块
-- 语法高亮的 JSON 响应显示
-- 响应历史记录
-
----
-
-## 📞 支持
-
-如有问题，请查看：
-1. 后端日志输出
-2. 浏览器开发者工具（F12）Console
-3. Network 标签查看请求详情
-
----
-
-## 🔄 更新日志
-
-### v1.0.0 (2025-01-26)
-- 初始版本
-- 支持所有核心 API 测试
-- 文件分块上传
-- 多数据源支持
-- 响应历史记录
+MIT
