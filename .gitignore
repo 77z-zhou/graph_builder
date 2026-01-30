@@ -259,3 +259,5 @@ Thumbs.db
 *.tmp
 *.temp
 ~$*
+.vscode/
+.claude/

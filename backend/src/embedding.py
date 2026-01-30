@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 _lock = Lock()
 _embedding_instance = None
+_dimension = None
 MODEL_NAME = "Qwen/Qwen3-Embedding-0.6B"
 MODEL_PATH =  os.path.join(os.path.dirname(os.path.dirname(__file__)),"local_model")
 
@@ -17,8 +18,8 @@ MODEL_PATH =  os.path.join(os.path.dirname(os.path.dirname(__file__)),"local_mod
 def load_embedding_model(model_name: str):
 
     if model_name == "sentence_transformer":
-        embeddings = get_local_sentence_transformer_embedding()
-        dimension = 1024
+        embeddings, dimension = get_local_sentence_transformer_embedding()
+        
         logger.info(f"Embedding: Using Langchain HuggingFaceEmbeddings. Dimension:{dimension}")
         
     return embeddings, dimension
@@ -46,9 +47,10 @@ def get_local_sentence_transformer_embedding():
             model_dir = snapshot_download(MODEL_NAME, cache_dir=MODEL_PATH)
             logger.info(f"Model:{MODEL_NAME} downloaded and saved:{model_dir}.")
         
-        _embedding_instance = HuggingFaceEmbeddings(model_name=model_path,)
+        _embedding_instance = HuggingFaceEmbeddings(model_name=model_path, query_encode_kwargs={"prompt_name":"query"})
         logger.info("Embedding model initialized.")
-        return _embedding_instance
+        _dimension = len(_embedding_instance.embed_query("test"))
+        return _embedding_instance, _dimension
 
 
 
